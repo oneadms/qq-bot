@@ -1,0 +1,18 @@
+server:
+  port: 30001
+
+spring:
+  application:
+    name: qq-bot
+  datasource:
+    username: ${mysql_username:root}
+    password: ${mysql_password:aaa1024}
+    url: ${mysql_url:jdbc:mysql://localhost:3306/qq_bot?serverTimezone=Asia/Shanghai&useSSL=false&characterEncoding=UTF-8}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+qq:
+  bot:
+    username: ${qq_bot_username:1273854603}
+    type: android_watch
+logging:
+  level:
+    com.jky.qqbot.mapper: debug
