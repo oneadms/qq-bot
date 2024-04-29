@@ -1,0 +1,35 @@
+name: Deploy to K3s
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Pull Docker image
+        run: docker pull your-docker-username/your-image-name:your-tag
+
+      - name: Install kubectl
+        uses: azure/kubectl@v1
+        with:
+          install-kubectl: true
+
+      - name: Deploy to K3s
+        run: |
+          kubectl config set-cluster k3s --server=https://119.91.222.75:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials k3s --username=${{ secrets.K3S_USERNAME }} --password=${{ secrets.K3S_PASSWORD }}
+          kubectl config set-context k3s --cluster=k3s --user=k3s
+          kubectl config use-context k3s
+          kubectl apply -f ./Kubernetes-dev.yaml
