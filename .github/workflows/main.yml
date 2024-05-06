@@ -20,14 +20,18 @@ jobs:
         with:
           maven-version: 3.8.2
           command: mvn clean package -DskipTests=true
-      - name: Docker Login Build and Push
+      - name: Docker Login
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          command: |
-            docker build --platform=linux/amd64 -t oneadm/qq-bot:1.0 --push .
 
+
+      - name: Docker Build And Push
+        uses: docker/login-action@v2
+        run: |
+          docker build --platform=linux/amd64 -t oneadm/qq-bot:1.0 .
+          docker push oneadm/qq-bot:1.0
       - name: Configure kubectl
         uses: steebchen/kubectl@v2.0.0
         with:
