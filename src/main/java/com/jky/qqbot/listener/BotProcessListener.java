@@ -119,7 +119,7 @@ public class BotProcessListener implements  Runnable{
 
             });
         } catch (Exception e) {
-            if (e instanceof BotAuthorizationException) {
+            if (e instanceof BotAuthorizationException|| e instanceof IllegalStateException) {
                 applicationContext.publishEvent(new BotStartedEvent("机器人重启中"));
             }
             log.error(e.toString());
