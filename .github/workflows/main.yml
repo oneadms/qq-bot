@@ -24,6 +24,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build with Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.2
         run: mvn clean package -DskipTests=true
 
       - name: Docker Build and Push
