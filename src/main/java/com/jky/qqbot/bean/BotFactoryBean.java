@@ -10,7 +10,7 @@ import org.springframework.beans.factory.FactoryBean;
 public class BotFactoryBean implements FactoryBean<Bot> {
    private QQBotProperties qqBotProperties;
    private BotConfiguration botConfiguration;
-    private static Boolean flag = false;
+    public static Boolean flag = true;
 
     public BotFactoryBean(QQBotProperties qqBotProperties, BotConfiguration botConfiguration) {
         this.qqBotProperties = qqBotProperties;
@@ -19,18 +19,15 @@ public class BotFactoryBean implements FactoryBean<Bot> {
 
     @Override
     public Bot getObject() {
-//        flag = !flag;
-//        if (flag) {
-//            botConfiguration.setProtocol(qqBotProperties.getType());
-           return BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
+        if (flag) {
+
+            return BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
                     BotAuthorization.byPassword(qqBotProperties.getPassword()),
                     botConfiguration);
-//        }
-//        botConfiguration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH);
-//
-//        return       BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
-//                BotAuthorization.byQRCode(),
-//                botConfiguration);
+        }
+        return  BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
+                BotAuthorization.byQRCode(),
+                botConfiguration);
     }
 
     @Override
