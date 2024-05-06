@@ -37,9 +37,9 @@ jobs:
           kubectl config set-credentials  k3s --token=${{ secrets.K3S_TOKEN }}
           kubectl config set-context k3s --cluster=k3s --user=k3s
           kubectl config use-context k3s
-          kubectl apply -f  ./Kubernetes-dev.yaml
-          kubectl delete -f ./Kubernetes-dev.yaml
-          kubectl apply -f  ./Kubernetes-dev.yaml
+          kubectl apply -n dev  -f  ./Kubernetes-dev.yaml
+          kubectl delete  -n dev -f ./Kubernetes-dev.yaml
+          kubectl apply -n dev  -f  ./Kubernetes-dev.yaml
          
 
       
