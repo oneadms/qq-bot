@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
@@ -19,7 +20,11 @@ public class QQBotInit implements ApplicationListener<BotStartedEvent>  {
     public void onApplicationEvent(BotStartedEvent event) {
         BotProcessListener botProcessListener = SpringContentUtils.getBean(BotProcessListener.class);
         log.info(event.getSource().toString());
-        CompletableFuture.runAsync(botProcessListener, Executors.newFixedThreadPool(1));
+        botProcessListener.run();
+        Thread thread = new Thread(botProcessListener);
+        thread.setDaemon(true);
+        thread.setPriority(10);
+        thread.start();
     }
 
 

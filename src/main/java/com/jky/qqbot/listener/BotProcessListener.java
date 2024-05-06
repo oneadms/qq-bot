@@ -1,26 +1,30 @@
 package com.jky.qqbot.listener;
 
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.github.yulichang.toolkit.SpringContentUtils;
 import com.jky.qqbot.common.enums.UserType;
 import com.jky.qqbot.domain.Message;
 import com.jky.qqbot.entity.MdDictonary;
 import com.jky.qqbot.entity.MdReplyMessage;
 import com.jky.qqbot.entity.MdUser;
 import com.jky.qqbot.event.BotStartedEvent;
-import com.jky.qqbot.init.QQBotInit;
 import com.jky.qqbot.mapper.MdDictonaryMapper;
 import com.jky.qqbot.mapper.MdReplyMessageMapper;
 import com.jky.qqbot.mapper.MdUserMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.*;
+import net.mamoe.mirai.contact.ContactList;
+import net.mamoe.mirai.contact.Friend;
+import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupTempMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
-import net.mamoe.mirai.message.data.*;
+import net.mamoe.mirai.message.data.Image;
+import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.SingleMessage;
 import net.mamoe.mirai.network.BotAuthorizationException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -40,25 +44,14 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 public class BotProcessListener implements  Runnable{
 
-    private final Bot bot;
 
     private static Set<String> keywords=new HashSet<>();
     private final MdDictonaryMapper dictonaryMapper;
     private MdUserMapper userMapper;
     private ApplicationContext applicationContext;
     private MdReplyMessageMapper mdReplyMessageMapper;
+    private Bot bot;
 
-    private static InputStream baseToInputStream(String base64str){
-        ByteArrayInputStream stream = null;
-        try {
-            BASE64Decoder decoder = new BASE64Decoder();
-            byte[] bytes = decoder.decodeBuffer(base64str);
-            stream = new ByteArrayInputStream(bytes);
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-        return stream;
-    }
 
 
     public static void main(String[] args) {
@@ -67,7 +60,6 @@ public class BotProcessListener implements  Runnable{
     public void run() {
         try {
             initData();
-
 
             bot.login();
 
@@ -81,7 +73,6 @@ public class BotProcessListener implements  Runnable{
                 if (manageGroupIds.contains(group.getId())) {
                     NormalMember member = event.getMember();
                     String nickname = member.getNick();
-
                     group.sendMessage("欢迎" + nickname + "加入本群,请扫码加入企业微信群");
                     List<MdReplyMessage> mdReplyMessages = mdReplyMessageMapper.selectList(Wrappers.lambdaQuery());
                     Message message = toMessage(mdReplyMessages);
@@ -118,9 +109,9 @@ public class BotProcessListener implements  Runnable{
                         entity.setMessage(imageId);
                         mdReplyMessageMapper.insert(entity);
                     }
-                    Image image = getImage(imageId);
+//                    Image image = getImage(imageId);
                     log.info("接收到一条图片:{}", code);
-                    event.getSubject().sendMessage(image);
+//                    event.getSubject().sendMessage(image);
                 }else{
                     log.info("接收到一条消息:{}", code);
                 }
@@ -163,7 +154,11 @@ public class BotProcessListener implements  Runnable{
             String regex = "^1[3456789]\\d{9}$";
             if (next.contentToString().matches(regex)) {
                 Friend member = event.getSender();
-                member.sendMessage("嗯嗯，我们已收到你的联系方式：" + next.contentToString());
+                String phone = next.contentToString();
+                member.sendMessage("嗯嗯，我们已收到你的联系方式：" + phone);
+                MdUser mdUser = userMapper.selectById(member.getId());
+                mdUser.setPhone(phone);
+                userMapper.updateById(mdUser);
             }
         }
     }

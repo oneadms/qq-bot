@@ -51,6 +51,7 @@ public class MdUser implements Serializable {
 
     @ApiModelProperty("逻辑删除")
     private String isDel;
+    private String phone;
 
 
 }

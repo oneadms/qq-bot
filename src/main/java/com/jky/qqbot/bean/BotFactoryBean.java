@@ -21,6 +21,7 @@ public class BotFactoryBean implements FactoryBean<Bot> {
     public Bot getObject() {
         flag = !flag;
         if (flag) {
+            botConfiguration.setProtocol(qqBotProperties.getType());
            return BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
                     BotAuthorization.byPassword(qqBotProperties.getPassword()),
                     botConfiguration);

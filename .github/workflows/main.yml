@@ -12,24 +12,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Login to Docker Hub
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+
+      - name: Docker Login
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Pull Docker image
-        run: docker pull your-docker-username/your-image-name:your-tag
+      - name: Build with Maven
+        run: mvn clean package -DskipTests=true
+
+      - name: Docker Build and Push
+        run: |
+          docker build --platform=linux/amd64 -t oneadm/qq-bot:1.0 --push .
+
 
       - name: Install kubectl
         uses: azure/kubectl@v1
         with:
           install-kubectl: true
 
-      - name: Deploy to K3s
+      - name: Configure kubectl
         run: |
           kubectl config set-cluster k3s --server=https://119.91.222.75:6443 --insecure-skip-tls-verify=true
-          kubectl config set-credentials k3s --username=${{ secrets.K3S_USERNAME }} --password=${{ secrets.K3S_PASSWORD }}
+          kubectl config set-credentials  k3s -
           kubectl config set-context k3s --cluster=k3s --user=k3s
           kubectl config use-context k3s
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f ./Kubernetes-dev.yaml
+        continue-on-error: true  # Continue even if applying manifests fails
+
+      - name: Wait for deployment to stabilize
+        run: |
+          kubectl rollout status deployment/your-deployment-name -n your-namespace
+        timeout-minutes: 5  # Adjust timeout as needed
+
+      - name: Delete and re-apply Kubernetes manifests
+        run: |
+          kubectl delete -f ./Kubernetes-dev.yaml
           kubectl apply -f ./Kubernetes-dev.yaml
