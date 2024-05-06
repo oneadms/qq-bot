@@ -35,25 +35,16 @@ jobs:
           install-kubectl: true
 
       - name: Configure kubectl
-        uses: bitnami/kubectl
+        uses: steebchen/kubectl@v2.0.0
         run: |
-          kubectl config set-cluster k3s --server=https://119.91.222.75:6443 --insecure-skip-tls-verify=true
-          kubectl config set-credentials  k3s -
-          kubectl config set-context k3s --cluster=k3s --user=k3s
-          kubectl config use-context k3s
+          config set-cluster k3s --server=https://119.91.222.75:6443 --insecure-skip-tls-verify=true
+          config set-credentials  k3s -
+          config set-context k3s --cluster=k3s --user=k3s
+          config use-context k3s
 
       - name: Apply Kubernetes manifests
         uses: bitnami/kubectl
         run: |
-          kubectl apply -f ./Kubernetes-dev.yaml
-        continue-on-error: true  # Continue even if applying manifests fails
-
-      - name: Wait for deployment to stabilize
-        run: |
-          kubectl rollout status deployment/your-deployment-name -n your-namespace
-        timeout-minutes: 5  # Adjust timeout as needed
-
-      - name: Delete and re-apply Kubernetes manifests
-        run: |
-          kubectl delete -f ./Kubernetes-dev.yaml
-          kubectl apply -f ./Kubernetes-dev.yaml
+          apply -f ./Kubernetes-dev.yaml
+          delete -f ./Kubernetes-dev.yaml
+          apply -f ./Kubernetes-dev.yaml
