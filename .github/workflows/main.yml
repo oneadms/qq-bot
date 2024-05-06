@@ -18,7 +18,7 @@ jobs:
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.2
-        run: mvn clean package -DskipTests=true
+          command: mvn clean package -DskipTests=true
       - name: Docker Login Build and Push
         uses: docker/login-action@v2
         with:
