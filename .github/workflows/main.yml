@@ -35,6 +35,7 @@ jobs:
           install-kubectl: true
 
       - name: Configure kubectl
+        uses: bitnami/kubectl
         run: |
           kubectl config set-cluster k3s --server=https://119.91.222.75:6443 --insecure-skip-tls-verify=true
           kubectl config set-credentials  k3s -
@@ -42,6 +43,7 @@ jobs:
           kubectl config use-context k3s
 
       - name: Apply Kubernetes manifests
+        uses: bitnami/kubectl
         run: |
           kubectl apply -f ./Kubernetes-dev.yaml
         continue-on-error: true  # Continue even if applying manifests fails
