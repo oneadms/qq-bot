@@ -11,6 +11,7 @@ import com.jky.qqbot.event.BotStartedEvent;
 import com.jky.qqbot.mapper.MdDictonaryMapper;
 import com.jky.qqbot.mapper.MdReplyMessageMapper;
 import com.jky.qqbot.mapper.MdUserMapper;
+import freemarker.template.SimpleDate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
@@ -35,6 +36,7 @@ import sun.misc.BASE64Decoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -68,6 +70,10 @@ public class BotProcessListener implements  Runnable{
             List<Group> manageGroups = groups.stream().
                     filter(g -> g.getBotPermission().getLevel() > 0).collect(Collectors.toList());
             List<Long> manageGroupIds = manageGroups.stream().map(Group::getId).collect(Collectors.toList());
+
+            for (Group manageGroup : manageGroups) {
+                manageGroup.sendMessage("Bot CD Deploy Success~" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+            }
             GlobalEventChannel.INSTANCE.subscribeAlways(MemberJoinEvent.class, event -> {
                 Group group = event.getGroup();
                 if (manageGroupIds.contains(group.getId())) {
