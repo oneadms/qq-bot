@@ -7,12 +7,17 @@ spring:
   datasource:
     username: ${mysql_username:root}
     password: ${mysql_password:aaa1024}
-    url: ${mysql_url:jdbc:mysql://localhost:3306/qq_bot?serverTimezone=Asia/Shanghai&useSSL=false&characterEncoding=UTF-8}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${mysql_url:jdbc:mysql://119.91.222.75:3306/qq_bot?serverTimezone=Asia/Shanghai&useSSL=false&characterEncoding=UTF-8&autoReconnect=true}
+    driver-class-name: com.mysql.jdbc.Driver
+
 qq:
   bot:
     username: ${qq_bot_username:1273854603}
-    type: android_watch
+    type: ${qq_bot_type:ipad}
+    password: ${qq_bot_pass:Aaa10247878=-}
+    deviceInfo: |
+      {"display":[107,52,48,115,46,50,48,52,48,46,49,48,56,48],"product":[-25,-70,-94,-25,-79,-77,107,52,48,115],"device":[109,115,109,105],"board":[109,115,109,105,56,55,48],"brand":[88,105,97,111,77,105],"model":[82,101,100,109,105,75,52,48,115],"bootloader":[117,110,107,110,111,119,110],"fingerprint":[88,105,97,111,109,105,47,115,97,103,105,116,47,115,97,103,105,116,58,56,46,48,46,48,47,79,80,82,49,46,49,55,48,54,50,51,46,48,50,55,47,86,57,46,53,46,51,46,48,46,79,67,65,67,78,70,65,58,117,115,101,114,47,114,101,108,101,97,115,101,45,107,101,121,115],"bootId":[50,101,53,55,56,49,101,101,45,52,98,50,56,45,52,99,52,48,45,56,50,102,48,45,49,48,98,51,57,101,56,49,50,49,57,99],"procVersion":[118,57],"baseBand":[],"version":{},"simInfo":[117,110,107,110,111,119,110],"osType":[97,110,100,114,111,105,100],"macAddress":[],"wifiBSSID":[],"wifiSSID":[50,49,56],"imsiMd5":[88,6,100,120,-82,-92,-113,61],"imei":"869441062975947","apn":[119,105,102,105]}
+
 logging:
   level:
     com.jky.qqbot.mapper: debug

@@ -10,4 +10,5 @@ public class QQBotProperties {
     private Long username;
     private String password;
     private BotConfiguration.MiraiProtocol type;
+    private String deviceInfo;
 }

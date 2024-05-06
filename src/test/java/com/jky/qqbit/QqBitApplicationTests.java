@@ -1,23 +1,26 @@
 package com.jky.qqbit;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
 import com.baomidou.mybatisplus.generator.config.OutputFile;
 import com.baomidou.mybatisplus.generator.config.rules.DbColumnType;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 import com.jky.qqbot.QQBotApplication;
+import com.jky.qqbot.domain.Message;
+import com.jky.qqbot.entity.MdReplyMessage;
+import com.jky.qqbot.mapper.MdReplyMessageMapper;
 import com.jky.qqbot.service.md.BasicDataService;
 import com.jky.qqbot.service.md.MdCacheService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
 import javax.annotation.Resource;
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SpringBootTest(classes = QQBotApplication.class)
 class QqBitApplicationTests {
@@ -27,6 +30,8 @@ class QqBitApplicationTests {
     BasicDataService basicDataService;
     @Resource
     MdCacheService mdCacheService;
+    @Resource
+    MdReplyMessageMapper mdReplyMessageMapper;
     @Test
     void test() {
         mdCacheService.getMdCache("mdDic", "KeyWord").forEach((k,v)->{
@@ -39,12 +44,44 @@ class QqBitApplicationTests {
         String[] a = (String[]) keywords.toArray();
 
     }
+
+    @Test
+    void test2() {
+        List<MdReplyMessage> mdReplyMessages = mdReplyMessageMapper.selectList(Wrappers.lambdaQuery());
+        Message message = toMessage(mdReplyMessages);
+        Message msgItem = message;
+        while ((msgItem=msgItem.getNextMessage())!=null) {
+            System.out.println(msgItem);
+
+        }
+    }
+    private Message toMessage(List<MdReplyMessage> mdReplyMessages) {
+        List<MdReplyMessage> list = mdReplyMessages.stream().sorted(Comparator.comparing(MdReplyMessage::getSeq)).collect(Collectors.toList());
+        Iterator<MdReplyMessage> iterator = list.iterator();
+        Message headNode = new Message();
+
+        com.jky.qqbot.domain.Message temp = new Message();
+        headNode.setNextMessage(temp);
+        while (iterator.hasNext()) {
+            MdReplyMessage next = iterator.next();
+            if (temp == null) {
+                temp = new Message();
+            }
+            BeanUtils.copyProperties(next, temp);
+            temp = temp.getNextMessage();
+        }
+
+        return headNode;
+
+    }
+
     @Test
     void contextLoads() {
         FastAutoGenerator.create(dataSourceProperties.getUrl(), dataSourceProperties.getUsername(), dataSourceProperties.getPassword())
                 .globalConfig(builder -> {
                     builder.author("jky") // 设置作者
-                            .enableSwagger() // 开启 swagger 模式
+                            .enableSwagger()
+                            // 开启 swagger 模式
                             .outputDir(System.getProperty("user.dir")+"/src/main/java/"); // 指定输出目录
                 })
                 .dataSourceConfig(builder -> builder.typeConvertHandler((globalConfig, typeRegistry, metaInfo) -> {
