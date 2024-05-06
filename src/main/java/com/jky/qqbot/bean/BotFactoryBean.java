@@ -19,18 +19,18 @@ public class BotFactoryBean implements FactoryBean<Bot> {
 
     @Override
     public Bot getObject() {
-        flag = !flag;
-        if (flag) {
-            botConfiguration.setProtocol(qqBotProperties.getType());
+//        flag = !flag;
+//        if (flag) {
+//            botConfiguration.setProtocol(qqBotProperties.getType());
            return BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
                     BotAuthorization.byPassword(qqBotProperties.getPassword()),
                     botConfiguration);
-        }
-        botConfiguration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH);
-
-        return       BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
-                BotAuthorization.byQRCode(),
-                botConfiguration);
+//        }
+//        botConfiguration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH);
+//
+//        return       BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
+//                BotAuthorization.byQRCode(),
+//                botConfiguration);
     }
 
     @Override
