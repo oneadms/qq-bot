@@ -25,9 +25,8 @@ public class BotFactoryBean implements FactoryBean<Bot> {
                     BotAuthorization.byPassword(qqBotProperties.getPassword()),
                     botConfiguration);
         }
-        return  BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
-                BotAuthorization.byQRCode(),
-                botConfiguration);
+        return BotFactory.INSTANCE.newBot(qqBotProperties.getUsername(),
+                BotAuthorization.byQRCode());
     }
 
     @Override
