@@ -47,4 +47,9 @@ public class CaptchaHolder {
         }
         return smsCaptcha;
     }
+
+    public static void clear() {
+        CaptchaHolder.setSmsCaptcha(null);
+        CaptchaHolder.setTicket(null);
+    }
 }

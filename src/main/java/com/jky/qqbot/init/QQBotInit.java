@@ -1,6 +1,7 @@
 package com.jky.qqbot.init;
 
 import com.github.yulichang.toolkit.SpringContentUtils;
+import com.jky.qqbot.common.holder.CaptchaHolder;
 import com.jky.qqbot.event.BotStartedEvent;
 import com.jky.qqbot.listener.BotProcessListener;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ public class QQBotInit implements ApplicationListener<BotStartedEvent>  {
 
     @Override
     public void onApplicationEvent(BotStartedEvent event) {
+        CaptchaHolder.clear();
         BotProcessListener botProcessListener = SpringContentUtils.getBean(BotProcessListener.class);
         log.info(event.getSource().toString());
         Thread thread = new Thread(botProcessListener);
