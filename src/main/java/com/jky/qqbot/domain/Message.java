@@ -4,13 +4,11 @@ import com.jky.qqbot.entity.MdReplyMessage;
 import lombok.ToString;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Iterator;
 @ToString
 public class Message extends MdReplyMessage  {
     public void send(Contact contact) {
@@ -51,15 +49,7 @@ public class Message extends MdReplyMessage  {
         return inputStream;
     }
 
-    private Message nextMessage;
 
-    public Message getNextMessage() {
-        return nextMessage;
-    }
-
-    public void setNextMessage(Message nextMessage) {
-        this.nextMessage = nextMessage;
-    }
 
 
 

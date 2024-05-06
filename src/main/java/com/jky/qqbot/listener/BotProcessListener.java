@@ -1,7 +1,6 @@
 package com.jky.qqbot.listener;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.github.yulichang.toolkit.SpringContentUtils;
 import com.jky.qqbot.common.enums.UserType;
 import com.jky.qqbot.domain.Message;
 import com.jky.qqbot.entity.MdDictonary;
@@ -11,7 +10,6 @@ import com.jky.qqbot.event.BotStartedEvent;
 import com.jky.qqbot.mapper.MdDictonaryMapper;
 import com.jky.qqbot.mapper.MdReplyMessageMapper;
 import com.jky.qqbot.mapper.MdUserMapper;
-import freemarker.template.SimpleDate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
@@ -32,10 +30,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import sun.misc.BASE64Decoder;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,17 +76,10 @@ public class BotProcessListener implements  Runnable{
                     String nickname = member.getNick();
                     group.sendMessage("欢迎" + nickname + "加入本群,请扫码加入企业微信群");
                     List<MdReplyMessage> mdReplyMessages = mdReplyMessageMapper.selectList(Wrappers.lambdaQuery());
-                    Message message = toMessage(mdReplyMessages);
-                    Message msgItem = message;
-                    while ((msgItem=msgItem.getNextMessage())!=null) {
-                        msgItem.send(group);
+                    List<Message> messageList = toMessageList(mdReplyMessages);
+                    for (Message message : messageList) {
+                        message.send(group);
                     }
-//                    if (CollectionUtils.isEmpty(mdReplyMessages)) {
-//
-//                        Contact.sendImage(group, QQBotInit.class.getResourceAsStream("/images/companyWechatGroup.png"));
-//                        Contact.sendImage(group, QQBotInit.class.getResourceAsStream("/images/wechatGroup.png"));
-//                    }
-                    group.sendMessage("请先扫描第一个二维码加入企业后，扫描第二个二维码在微信上接收企业微信消息");
                     member.nudge();
                     member.sendMessage("您好，请发送您的技术栈给我，尔后我们将会为你定制推单");
 
@@ -195,23 +183,15 @@ public class BotProcessListener implements  Runnable{
         }
     }
 
-    private Message toMessage(List<MdReplyMessage> mdReplyMessages) {
-        List<MdReplyMessage> list = mdReplyMessages.stream().sorted(Comparator.comparing(MdReplyMessage::getSeq)).collect(Collectors.toList());
-        Iterator<MdReplyMessage> iterator = list.iterator();
-        Message headNode = new Message();
-
-        com.jky.qqbot.domain.Message temp = new Message();
-        headNode.setNextMessage(temp);
-        while (iterator.hasNext()) {
-            MdReplyMessage next = iterator.next();
-            if (temp == null) {
-                temp = new Message();
-            }
-            BeanUtils.copyProperties(next, temp);
-            temp = temp.getNextMessage();
-        }
-
-        return headNode;
+    private List<Message> toMessageList(List<MdReplyMessage> mdReplyMessages) {
+        List<Message> list = mdReplyMessages.stream().sorted(Comparator.comparing(MdReplyMessage::getSeq))
+                .map(rm->
+                {
+                    Message message = new Message();
+                    BeanUtils.copyProperties(rm, message);
+                    return message;
+            }).collect(Collectors.toList());
+        return list;
 
     }
 
