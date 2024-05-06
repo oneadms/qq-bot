@@ -29,11 +29,6 @@ jobs:
       - name: Docker Build and Push
         run: |
           docker build --platform=linux/amd64 -t oneadm/qq-bot:1.0 --push .
-      - name: Install kubectl
-        uses: bitnami/kubectl
-        with:
-          install-kubectl: true
-
       - name: Configure kubectl
         uses: steebchen/kubectl@v2.0.0
         run: |
