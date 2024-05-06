@@ -29,10 +29,8 @@ jobs:
       - name: Docker Build and Push
         run: |
           docker build --platform=linux/amd64 -t oneadm/qq-bot:1.0 --push .
-
-
       - name: Install kubectl
-        uses: Azure/setup-kubectl
+        uses: bitnami/kubectl
         with:
           install-kubectl: true
 
