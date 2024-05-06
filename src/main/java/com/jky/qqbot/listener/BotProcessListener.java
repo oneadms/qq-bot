@@ -156,7 +156,8 @@ public class BotProcessListener implements  Runnable{
                 Friend member = event.getSender();
                 String phone = next.contentToString();
                 member.sendMessage("嗯嗯，我们已收到你的联系方式：" + phone);
-                MdUser mdUser = userMapper.selectById(member.getId());
+                MdUser mdUser = userMapper.selectOne(Wrappers.lambdaQuery(MdUser.class)
+                        .eq(MdUser::getUserId,member.getId()));
                 mdUser.setPhone(phone);
                 userMapper.updateById(mdUser);
             }
