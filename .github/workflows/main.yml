@@ -38,7 +38,7 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         run: |
           config set-cluster k3s --server=https://119.91.222.75:6443 --insecure-skip-tls-verify=true
-          config set-credentials  k3s -
+          config set-credentials  k3s --token=${{ secrets.K3S_TOKEN }}
           config set-context k3s --cluster=k3s --user=k3s
           config use-context k3s
 
