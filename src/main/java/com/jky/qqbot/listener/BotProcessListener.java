@@ -13,14 +13,12 @@ import com.jky.qqbot.mapper.MdUserMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.ContactList;
-import net.mamoe.mirai.contact.Friend;
-import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.contact.NormalMember;
+import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupTempMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
+import net.mamoe.mirai.event.events.MemberLeaveEvent;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
@@ -89,7 +87,7 @@ public class BotProcessListener implements  Runnable{
             GlobalEventChannel.INSTANCE.subscribeAlways(GroupTempMessageEvent.class, this::process);
             GlobalEventChannel.INSTANCE.subscribeAlways(FriendMessageEvent.class, this::process);
             AtomicBoolean flag = new AtomicBoolean(false);
-            GlobalEventChannel.INSTANCE.subscribeAlways(FriendMessageEvent.class, event->{
+            GlobalEventChannel.INSTANCE.subscribeAlways(FriendMessageEvent.class, event -> {
                 MessageChain message = event.getMessage();
 
                 String code = message.serializeToMiraiCode();
@@ -106,7 +104,7 @@ public class BotProcessListener implements  Runnable{
 //                    Image image = getImage(imageId);
                     log.info("接收到一条图片:{}", code);
 //                    event.getSubject().sendMessage(image);
-                }else{
+                } else {
                     log.info("接收到一条消息:{}", code);
                 }
                 if ("开始配置".equals(code)) {
@@ -117,6 +115,12 @@ public class BotProcessListener implements  Runnable{
                 }
 
 
+            });
+            GlobalEventChannel.INSTANCE.subscribeAlways(MemberLeaveEvent.class,event->{
+                Member member = event.getMember();
+                member.sendMessage("为什么退群呢 是看群人数太少了吗？～ 工作室刚刚起步 需要您的加入呢");
+                member.sendMessage("现在工作室单量还是有的,不用担心哈");
+                member.nudge();
             });
         } catch (Exception e) {
             if (e instanceof BotAuthorizationException|| e instanceof IllegalStateException) {
