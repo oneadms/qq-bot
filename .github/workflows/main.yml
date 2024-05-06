@@ -17,9 +17,9 @@ jobs:
           distribution: 'adopt'
       - name: Build with Maven
         uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.8.2
-          command: mvn clean package -DskipTests=true
+      - name: Maven Package
+        run: |
+          mvn clean package -DskipTests=true
       - name: Docker Login
         uses: docker/login-action@v2
         with:
