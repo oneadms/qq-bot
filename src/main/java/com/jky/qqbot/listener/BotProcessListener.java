@@ -64,9 +64,6 @@ public class BotProcessListener implements  Runnable{
                     filter(g -> g.getBotPermission().getLevel() > 0).collect(Collectors.toList());
             List<Long> manageGroupIds = manageGroups.stream().map(Group::getId).collect(Collectors.toList());
 
-            for (Group manageGroup : manageGroups) {
-                manageGroup.sendMessage("Bot CD Deploy Success~" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-            }
             GlobalEventChannel.INSTANCE.subscribeAlways(MemberJoinEvent.class, event -> {
                 Group group = event.getGroup();
                 if (manageGroupIds.contains(group.getId())) {
@@ -135,9 +132,14 @@ public class BotProcessListener implements  Runnable{
 
         while (iterator.hasNext()) {
             SingleMessage next = iterator.next();
-
+            if (next.contentToString().contains("重载字典")) {
+                initData();
+                String keywordStr = keywords.stream().collect(Collectors.joining("\n"));
+                event.getSubject().sendMessage("重载完成,当前字典信息如下:\n" + keywordStr);
+            }
             for (String keyword : keywords) {
                 String technologyStack = next.contentToString();
+
                 if (technologyStack.toLowerCase().contains(keyword.toLowerCase())) {
                     Friend member = event.getSender();
                     long id = member.getId();
