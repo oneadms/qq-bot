@@ -45,35 +45,7 @@ class QqBitApplicationTests {
 
     }
 
-    @Test
-    void test2() {
-        List<MdReplyMessage> mdReplyMessages = mdReplyMessageMapper.selectList(Wrappers.lambdaQuery());
-        Message message = toMessage(mdReplyMessages);
-        Message msgItem = message;
-        while ((msgItem=msgItem.getNextMessage())!=null) {
-            System.out.println(msgItem);
 
-        }
-    }
-    private Message toMessage(List<MdReplyMessage> mdReplyMessages) {
-        List<MdReplyMessage> list = mdReplyMessages.stream().sorted(Comparator.comparing(MdReplyMessage::getSeq)).collect(Collectors.toList());
-        Iterator<MdReplyMessage> iterator = list.iterator();
-        Message headNode = new Message();
-
-        com.jky.qqbot.domain.Message temp = new Message();
-        headNode.setNextMessage(temp);
-        while (iterator.hasNext()) {
-            MdReplyMessage next = iterator.next();
-            if (temp == null) {
-                temp = new Message();
-            }
-            BeanUtils.copyProperties(next, temp);
-            temp = temp.getNextMessage();
-        }
-
-        return headNode;
-
-    }
 
     @Test
     void contextLoads() {
