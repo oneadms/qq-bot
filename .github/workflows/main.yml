@@ -32,7 +32,7 @@ jobs:
 
 
       - name: Install kubectl
-        uses: azure/kubectl@v1
+        uses: Azure/setup-kubectl
         with:
           install-kubectl: true
 
