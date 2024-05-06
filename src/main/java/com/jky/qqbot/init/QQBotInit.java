@@ -20,7 +20,6 @@ public class QQBotInit implements ApplicationListener<BotStartedEvent>  {
     public void onApplicationEvent(BotStartedEvent event) {
         BotProcessListener botProcessListener = SpringContentUtils.getBean(BotProcessListener.class);
         log.info(event.getSource().toString());
-        botProcessListener.run();
         Thread thread = new Thread(botProcessListener);
         thread.setDaemon(true);
         thread.setPriority(10);
