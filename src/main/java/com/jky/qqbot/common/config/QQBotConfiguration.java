@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.auth.BotAuthorization;
+import net.mamoe.mirai.auth.QRCodeLoginListener;
 import net.mamoe.mirai.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +56,12 @@ public class QQBotConfiguration   {
                     }
                 });
                 return sms.solved(CaptchaHolder.getSmsCaptcha());
+            }
+
+            @NotNull
+            @Override
+            public QRCodeLoginListener createQRCodeLoginListener(@NotNull Bot bot) {
+                return new StandardCharImageLoginSolver().createQRCodeLoginListener(bot);
             }
 
             @Nullable
