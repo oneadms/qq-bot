@@ -178,6 +178,7 @@ public class BotProcessListener implements  Runnable{
                     userMapper.insert(toUser);
                     member.sendMessage("好的，您的技术栈为" + technologyStack);
                     member.sendMessage("方便留下你的手机号码？留下电话号码接下来有符合你的单子将会优先联系你哟");
+
                     break;
                 }
 
@@ -185,7 +186,12 @@ public class BotProcessListener implements  Runnable{
             String regex = "^1[3456789]\\d{9}$";
             if (next.contentToString().matches(regex)) {
                 NormalMember member = event.getSender();
-                member.sendMessage("嗯嗯，我们已收到你的联系方式：" + next.contentToString());
+                String phone = next.contentToString();
+                member.sendMessage("嗯嗯，我们已收到你的联系方式：" + phone);
+                MdUser mdUser = userMapper.selectOne(Wrappers.lambdaQuery(MdUser.class)
+                        .eq(MdUser::getUserId,member.getId()));
+                mdUser.setPhone(phone);
+                userMapper.updateById(mdUser);
             }
         }
     }
