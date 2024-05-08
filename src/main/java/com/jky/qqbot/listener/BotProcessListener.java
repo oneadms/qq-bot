@@ -174,6 +174,11 @@ public class BotProcessListener implements  Runnable{
                 if (technologyStack.toLowerCase().contains(keyword.toLowerCase())) {
                     NormalMember member = event.getSender();
                     long id = member.getId();
+                    MdUser mdUser = userMapper.selectOne(Wrappers.lambdaQuery(MdUser.class)
+                            .eq(MdUser::getUserId, id));
+                    if (mdUser != null) {
+                        return; //用户已经存在
+                    }
                     MdUser toUser = toUser(technologyStack, member, id);
                     userMapper.insert(toUser);
                     member.sendMessage("好的，您的技术栈为" + technologyStack);
@@ -209,16 +214,6 @@ public class BotProcessListener implements  Runnable{
     }
 
 
-    @NotNull
-    private static Image getImage(String imageId) {
-        Image.Builder builder = Image.newBuilder(imageId);
-
-        builder.setWidth(1080);
-        builder.setHeight(1920);
-        builder.setEmoji(false);
-        Image image = builder.build();
-        return image;
-    }
 
     private void initData() {
         log.info("开始加载技术栈关键词");
