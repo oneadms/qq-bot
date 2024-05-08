@@ -76,7 +76,7 @@ public class BotProcessListener implements  Runnable{
                         message.send(group);
                     }
                     member.nudge();
-                    member.sendMessage("您好，请发送您的技术栈给我，尔后我们将会为你定制推单");
+                    member.sendMessage("您好，请发送您的技术栈给我，未来我们将会为你定制推单");
 
                 }
             });
