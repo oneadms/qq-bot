@@ -53,6 +53,13 @@ public class BotProcessListener implements  Runnable{
 
 
     public static void main(String[] args) {
+        String msg = "[mirai:at:721767431]  拉黑 装逼";
+
+        String memberId = msg.substring(msg.indexOf("mirai:at") + "mirai:at".length()+1, msg.indexOf(']') );
+        System.out.println(memberId);
+        String reason = msg.substring(msg.lastIndexOf("拉黑") + "拉黑".length()+1).trim();
+        System.out.println(reason);
+
     }
     @Override
     public void run() {
@@ -141,12 +148,12 @@ public class BotProcessListener implements  Runnable{
         log.info("收到一条群聊消息:{}", msg);
         boolean isManage = groupMessageEvent.getSender().getPermission().getLevel() > 0;
         if (msg.contains("mirai:at") && msg.contains("拉黑")&&isManage) {
-            String blackUser = msg.substring(msg.lastIndexOf("mirai:at") + 1);
+            String blackUser = msg.substring(msg.indexOf("mirai:at") + "mirai:at".length() + 1, msg.indexOf(']'));
             ContactList<NormalMember> members = group.getMembers();
             for (NormalMember member : members) {
                 long id = member.getId();
                 if (Objects.equals(id + "", blackUser)) {
-                    String reason = msg.substring(msg.lastIndexOf("拉黑") + 1);
+                    String reason = msg.substring(msg.lastIndexOf("拉黑") + "拉黑".length()+1).trim();
                     member.kick(reason, true);
                     MdBlackList entity = new MdBlackList();
                     entity.setUserId(blackUser);
@@ -155,6 +162,9 @@ public class BotProcessListener implements  Runnable{
             }
         }
     }
+
+
+
 
     private void process(FriendMessageEvent event) {
         Iterator<SingleMessage> iterator = event.getMessage().iterator();
