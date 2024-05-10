@@ -32,7 +32,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 @Slf4j
@@ -54,7 +56,6 @@ public class BotProcessListener implements  Runnable{
 
     public static void main(String[] args) {
         String msg = "[mirai:at:721767431]  拉黑 装逼";
-
         String memberId = msg.substring(msg.indexOf("mirai:at") + "mirai:at".length()+1, msg.indexOf(']') );
         System.out.println(memberId);
         String reason = msg.substring(msg.lastIndexOf("拉黑") + "拉黑".length()+1).trim();
@@ -67,11 +68,24 @@ public class BotProcessListener implements  Runnable{
             initData();
 
             bot.login();
-
             ContactList<Group> groups = bot.getGroups();
             //获取当前管理的群
             List<Group> manageGroups = groups.stream().
                     filter(g -> g.getBotPermission().getLevel() > 0).collect(Collectors.toList());
+            for (Group manageGroup : manageGroups) {
+                ContactList<NormalMember> members = manageGroup.getMembers();
+                for (NormalMember member : members) {
+                    long id = member.getId();
+                    MdBlackList blackList = blackListMapper.selectOne(Wrappers.lambdaQuery(MdBlackList.class).eq(MdBlackList::getUserId, id + ""));
+                    if (blackList != null) {
+                        String reason = blackList.getReason();
+                        manageGroup.sendMessage("哦豁,"+  member.getNick()+"发现你被拉黑了呢 拉黑理由如下:"+ reason);
+                        manageGroup.sendMessage("再见👋");
+                        member.kick(reason);
+                        return;
+                    }
+                }
+            }
             List<Long> manageGroupIds = manageGroups.stream().map(Group::getId).collect(Collectors.toList());
 
             GlobalEventChannel.INSTANCE.subscribeAlways(MemberJoinEvent.class, event -> {
@@ -149,15 +163,23 @@ public class BotProcessListener implements  Runnable{
         boolean isManage = groupMessageEvent.getSender().getPermission().getLevel() > 0;
         if (msg.contains("mirai:at") && msg.contains("拉黑")&&isManage) {
             String blackUser = msg.substring(msg.indexOf("mirai:at") + "mirai:at".length() + 1, msg.indexOf(']'));
+
             ContactList<NormalMember> members = group.getMembers();
             for (NormalMember member : members) {
                 long id = member.getId();
+
                 if (Objects.equals(id + "", blackUser)) {
                     String reason = msg.substring(msg.lastIndexOf("拉黑") + "拉黑".length()+1).trim();
                     member.kick(reason, true);
-                    MdBlackList entity = new MdBlackList();
-                    entity.setUserId(blackUser);
-                    blackListMapper.insert(entity);
+                    MdBlackList blackList = blackListMapper.selectOne(
+                            Wrappers.lambdaQuery(MdBlackList.class).eq(MdBlackList::getUserId, blackUser)
+                    );
+                    if (blackList == null) {
+                        MdBlackList entity = new MdBlackList();
+                        entity.setUserId(blackUser);
+                        blackListMapper.insert(entity);
+                    }
+                    break;
                 }
             }
         }
