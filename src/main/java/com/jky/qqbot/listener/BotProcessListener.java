@@ -177,6 +177,7 @@ public class BotProcessListener implements  Runnable{
                     if (blackList == null) {
                         MdBlackList entity = new MdBlackList();
                         entity.setUserId(blackUser);
+                        entity.setReason(reason);
                         blackListMapper.insert(entity);
                     }
                     break;
