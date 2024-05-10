@@ -3,33 +3,35 @@ package com.jky.qqbot.listener;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.jky.qqbot.common.enums.UserType;
 import com.jky.qqbot.domain.Message;
+import com.jky.qqbot.entity.MdBlackList;
 import com.jky.qqbot.entity.MdDictonary;
 import com.jky.qqbot.entity.MdReplyMessage;
 import com.jky.qqbot.entity.MdUser;
 import com.jky.qqbot.event.BotStartedEvent;
+import com.jky.qqbot.mapper.MdBlackListMapper;
 import com.jky.qqbot.mapper.MdDictonaryMapper;
 import com.jky.qqbot.mapper.MdReplyMessageMapper;
 import com.jky.qqbot.mapper.MdUserMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.*;
+import net.mamoe.mirai.contact.ContactList;
+import net.mamoe.mirai.contact.Friend;
+import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
+import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.GroupTempMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
-import net.mamoe.mirai.event.events.MemberLeaveEvent;
-import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
 import net.mamoe.mirai.network.BotAuthorizationException;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -46,6 +48,7 @@ public class BotProcessListener implements  Runnable{
     private ApplicationContext applicationContext;
     private MdReplyMessageMapper mdReplyMessageMapper;
     private Bot bot;
+    private MdBlackListMapper blackListMapper;
 
 
 
@@ -68,6 +71,16 @@ public class BotProcessListener implements  Runnable{
                 Group group = event.getGroup();
                 if (manageGroupIds.contains(group.getId())) {
                     NormalMember member = event.getMember();
+                    long id = member.getId();
+
+                    MdBlackList blackList = blackListMapper.selectOne(Wrappers.lambdaQuery(MdBlackList.class).eq(MdBlackList::getUserId, id + ""));
+                    if (blackList != null) {
+                        String reason = blackList.getReason();
+                        group.sendMessage("哦豁 发现你被拉黑了呢 拉黑理由如下:"+ reason);
+                        group.sendMessage("再见👋");
+                        member.kick(reason);
+                        return;
+                    }
                     String nickname = member.getNick();
                     group.sendMessage("欢迎" + nickname + "加入本群,请扫码加入企业微信群");
                     List<MdReplyMessage> mdReplyMessages = mdReplyMessageMapper.selectList(Wrappers.lambdaQuery());
@@ -80,8 +93,7 @@ public class BotProcessListener implements  Runnable{
 
                 }
             });
-
-            GlobalEventChannel.INSTANCE.subscribeAlways(GroupTempMessageEvent.class, this::process);
+            GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, this::process);            GlobalEventChannel.INSTANCE.subscribeAlways(GroupTempMessageEvent.class, this::process);
             GlobalEventChannel.INSTANCE.subscribeAlways(FriendMessageEvent.class, this::process);
             AtomicBoolean flag = new AtomicBoolean(false);
             GlobalEventChannel.INSTANCE.subscribeAlways(FriendMessageEvent.class, event -> {
@@ -113,17 +125,34 @@ public class BotProcessListener implements  Runnable{
 
 
             });
-            GlobalEventChannel.INSTANCE.subscribeAlways(MemberLeaveEvent.class,event->{
-                Member member = event.getMember();
-                member.sendMessage("为什么退群呢 是看群人数太少了吗？～ 工作室刚刚起步 需要您的加入呢");
-                member.sendMessage("现在工作室单量还是有的,不用担心哈");
-                member.nudge();
-            });
+
         } catch (Exception e) {
             if (e instanceof BotAuthorizationException|| e instanceof IllegalStateException) {
                 applicationContext.publishEvent(new BotStartedEvent("机器人重启中"));
             }
             log.error(e.toString());
+        }
+    }
+
+    private void process(GroupMessageEvent groupMessageEvent) {
+        MessageChain message = groupMessageEvent.getMessage();
+        String msg = message.serializeToMiraiCode();
+        Group group = groupMessageEvent.getGroup();
+        log.info("收到一条群聊消息:{}", msg);
+        boolean isManage = groupMessageEvent.getSender().getPermission().getLevel() > 0;
+        if (msg.contains("mirai:at") && msg.contains("拉黑")&&isManage) {
+            String blackUser = msg.substring(msg.lastIndexOf("mirai:at") + 1);
+            ContactList<NormalMember> members = group.getMembers();
+            for (NormalMember member : members) {
+                long id = member.getId();
+                if (Objects.equals(id + "", blackUser)) {
+                    String reason = msg.substring(msg.lastIndexOf("拉黑") + 1);
+                    member.kick(reason, true);
+                    MdBlackList entity = new MdBlackList();
+                    entity.setUserId(blackUser);
+                    blackListMapper.insert(entity);
+                }
+            }
         }
     }
 
