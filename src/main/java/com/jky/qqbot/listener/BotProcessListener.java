@@ -34,6 +34,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 @Slf4j
 @AllArgsConstructor
@@ -64,7 +65,6 @@ public class BotProcessListener implements  Runnable{
     public void run() {
         try {
             initData();
-
             bot.login();
             ContactList<Group> groups = bot.getGroups();
             //获取当前管理的群
@@ -72,10 +72,13 @@ public class BotProcessListener implements  Runnable{
                     filter(g -> g.getBotPermission().getLevel() > 0).collect(Collectors.toList());
             for (Group manageGroup : manageGroups) {
                 ContactList<NormalMember> members = manageGroup.getMembers();
+                List<MdBlackList> blackLists = blackListMapper.selectList(Wrappers.lambdaQuery(MdBlackList.class));
+                Map<String, MdBlackList> blackListMap = blackLists.stream().collect(Collectors.toMap(MdBlackList::getUserId, Function.identity()));
                 for (NormalMember member : members) {
                     long id = member.getId();
-                    MdBlackList blackList = blackListMapper.selectOne(Wrappers.lambdaQuery(MdBlackList.class).eq(MdBlackList::getUserId, id + ""));
-                    if (blackList != null) {
+                    String memberId = id + "";
+                    if (blackListMap.containsKey(memberId)) {
+                        MdBlackList blackList = blackListMap.get(memberId);
                         String reason = blackList.getReason();
                         manageGroup.sendMessage("哦豁,"+  member.getNick()+"发现你被拉黑了呢 拉黑理由如下:"+ reason);
                         manageGroup.sendMessage("再见👋");
@@ -141,8 +144,6 @@ public class BotProcessListener implements  Runnable{
                 if ("配置结束".equals(code)) {
                     flag.set(false);
                 }
-
-
             });
 
         } catch (Exception e) {
