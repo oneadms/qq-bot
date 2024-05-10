@@ -1,5 +1,6 @@
 package com.jky.qqbot.listener;
 
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.jky.qqbot.common.enums.UserType;
 import com.jky.qqbot.domain.Message;
@@ -20,10 +21,7 @@ import net.mamoe.mirai.contact.Friend;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.event.events.FriendMessageEvent;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.event.events.GroupTempMessageEvent;
-import net.mamoe.mirai.event.events.MemberJoinEvent;
+import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
 import net.mamoe.mirai.network.BotAuthorizationException;
@@ -87,7 +85,7 @@ public class BotProcessListener implements  Runnable{
                 }
             }
             List<Long> manageGroupIds = manageGroups.stream().map(Group::getId).collect(Collectors.toList());
-
+            GlobalEventChannel.INSTANCE.subscribeAlways(MessageEvent.class,this::process);
             GlobalEventChannel.INSTANCE.subscribeAlways(MemberJoinEvent.class, event -> {
                 Group group = event.getGroup();
                 if (manageGroupIds.contains(group.getId())) {
@@ -152,6 +150,20 @@ public class BotProcessListener implements  Runnable{
                 applicationContext.publishEvent(new BotStartedEvent("机器人重启中"));
             }
             log.error(e.toString());
+        }
+    }
+
+    private void process(MessageEvent messageEvent) {
+        String msg = messageEvent.getMessage().serializeToMiraiCode();
+        if ("黑名单".equals(msg)) {
+            List<MdBlackList> blackLists = blackListMapper.selectList(Wrappers.lambdaQuery());
+            if (CollectionUtils.isEmpty(blackLists)) {
+                return;
+            }
+
+            String blackListMessage = blackLists.stream().map(blackList -> "QQ: " + blackList.getUserId() + " 原因：" + blackList.getReason()
+            ).collect(Collectors.joining("\n"));
+            messageEvent.getSubject().sendMessage(blackListMessage);
         }
     }
 
