@@ -73,7 +73,8 @@ public class BotProcessListener implements  Runnable{
             for (Group manageGroup : manageGroups) {
                 ContactList<NormalMember> members = manageGroup.getMembers();
                 List<MdBlackList> blackLists = blackListMapper.selectList(Wrappers.lambdaQuery(MdBlackList.class));
-                Map<String, MdBlackList> blackListMap = blackLists.stream().collect(Collectors.toMap(MdBlackList::getUserId, Function.identity()));
+                Map<String, MdBlackList> blackListMap = blackLists.stream()
+                        .collect(Collectors.toMap(MdBlackList::getUserId, Function.identity()));
                 for (NormalMember member : members) {
                     long id = member.getId();
                     String memberId = id + "";
@@ -218,6 +219,11 @@ public class BotProcessListener implements  Runnable{
                 if (technologyStack.toLowerCase().contains(keyword.toLowerCase())) {
                     Friend member = event.getSender();
                     long id = member.getId();
+                    MdUser mdUser = userMapper.selectOne(Wrappers.lambdaQuery(MdUser.class)
+                            .eq(MdUser::getUserId, id));
+                    if (mdUser != null) {
+                        return; //用户已经存在
+                    }
                     MdUser toUser = toUser(technologyStack, member, id);
                     userMapper.insert(toUser);
                     member.sendMessage("好的，您的技术栈为" + technologyStack);
@@ -292,8 +298,8 @@ public class BotProcessListener implements  Runnable{
 
     private void initData() {
         log.info("开始加载技术栈关键词");
-        List<MdDictonary> keyWord = dictonaryMapper.selectList(Wrappers.lambdaQuery(MdDictonary.class)
-
+        List<MdDictonary> keyWord = dictonaryMapper
+                .selectList(Wrappers.lambdaQuery(MdDictonary.class)
                 .eq(MdDictonary::getDicName, "KeyWord")
                 .eq(MdDictonary::getIsDel, "0"));
         for (MdDictonary mdDictonary : keyWord) {
