@@ -8,10 +8,9 @@ spec:
   ports:
     - port: 80
       targetPort: 30001
-      nodePort: 30001
   selector:
     app: qq-bot
-  type: NodePort
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -35,14 +35,7 @@ public class QQBotController {
         return "ok";
     }
 
-    @GetMapping("switchLogin")
-    public String switchLogin(@RequestParam(required = false) String type) {
-        if (!StringUtils.isEmpty(type)) {
-            botConfiguration.setProtocol(ProtocolType.of(type).getProtocol());
-        }
-        BotFactoryBean.flag = !BotFactoryBean.flag;
-        return "ok";
-    }
+
 
     @GetMapping("link/{type}")
     public void link(@PathVariable(name = "type") Integer type, HttpServletResponse response)  {
