@@ -33,7 +33,7 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
       - name: Deploy kubectl
         run: |
-          kubectl config set-cluster k3s --server=https://119.91.222.75:6443 --insecure-skip-tls-verify=true
+          kubectl config set-cluster k3s --server=https://152.136.110.249:6443 --insecure-skip-tls-verify=true
           kubectl config set-credentials  k3s --token=${{ secrets.K3S_TOKEN }}
           kubectl config set-context k3s --cluster=k3s --user=k3s
           kubectl config use-context k3s
